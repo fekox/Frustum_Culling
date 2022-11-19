@@ -1,38 +1,43 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class FrustumCulling : MonoBehaviour
 {
-    [SerializeField] private GameObject objecTest;
-
-    [SerializeField] private GameObject plaDown;
-    [SerializeField] private GameObject plaUp;
-    [SerializeField] private GameObject plaRight;
-    [SerializeField] private GameObject plaLeft;
-    [SerializeField] private GameObject plaBack;
-    [SerializeField] private GameObject plaFront;
-
-    private const int maxPlanes = 6;
-    private const int maxPoints = 8;
-
+    //Inicializa las Constantes
+    private const int maxPlanes = 6; //Cantidad de planos del frstrum.
+    
+    //Inicializo un array con la cantidad de planos del frustrum.
     Plane[] plane = new Plane[maxPlanes];
-    Vector3[] point = new Vector3[maxPoints];
 
-    // Start is called before the first frame update
-    void Start()
+    //Creo la una camara.
+    Camera camera;
+
+    //Plano cercano de la camara.
+    [SerializeField] Vector3 nearTopLeft;
+    [SerializeField] Vector3 nearTopRight;
+    [SerializeField] Vector3 nearBottomLeft;
+    [SerializeField] Vector3 nearBottomRight;
+
+    //Plano lejano de la camara.
+    [SerializeField] Vector3 farTopLeft;
+    [SerializeField] Vector3 farTopRight;
+    [SerializeField] Vector3 farBottomLeft;
+    [SerializeField] Vector3 farBottomRight;
+
+    private void Awake() //Se llama automaticamente al iniciar el programa.
+    {
+        //Hago que la camara sea igual a la main camara.
+        camera = Camera.main;
+    }
+
+    void Start() //Se llama automaticamente al iniciar el programa.
     {
         for (int i = 0; i < maxPlanes; i++)
         {
             plane[i] = new Plane();
         }
-
-        plane[0] = new Plane(Vector3.up, plaDown.transform.position);
-        plane[1] = new Plane(Vector3.down, plaUp.transform.position);
-        plane[2] = new Plane(Vector3.left, plaRight.transform.position);
-        plane[3] = new Plane(Vector3.right, plaLeft.transform.position);
-        plane[4] = new Plane(Vector3.back, plaBack.transform.position);
-        plane[5] = new Plane(Vector3.forward, plaFront.transform.position);
     }
 
     // Update is called once per frame
