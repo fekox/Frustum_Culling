@@ -82,29 +82,35 @@ public class FrustumCulling : MonoBehaviour
     //Funcion para setear los puntos del plano lejano
     public void SetFarPoints(Vector3 farPos)
     {
+        float halfCameraFarPlaneHeight = Mathf.Tan((camera.fieldOfView / 2) * Mathf.Deg2Rad) * camera.farClipPlane; //Guardo el alto del plano lejano de la camara. (La mitad)
+        float halfCameraFarPlaneWidth = (camera.aspect * halfCameraFarPlaneHeight); //Guardo el ancho del plano lejano de la camara. (La mitad)
+
         Vector3 farPlaneDist = camera.transform.position + (camera.transform.forward * camera.farClipPlane); //Guardo la distancia del plano lejano de la camara.
 
-        farTopLeft = farPlaneDist + (camera.transform.up) - (camera.transform.right); //Seteo el punto de arriba a la izquierda.
+        farTopLeft = farPlaneDist + (camera.transform.up * halfCameraFarPlaneHeight) - (camera.transform.right * halfCameraFarPlaneWidth); //Seteo el punto de arriba a la izquierda.
 
-        farTopRight = farPlaneDist + (camera.transform.up) + (camera.transform.right); //Seteo el punto de arriba a la derecha.
+        farTopRight = farPlaneDist + (camera.transform.up * halfCameraFarPlaneHeight) + (camera.transform.right * halfCameraFarPlaneWidth); //Seteo el punto de arriba a la derecha.
 
-        farDownLeft = farPlaneDist - (camera.transform.up) - (camera.transform.right); //Seteo el punto de abajo a la izquierda.
+        farDownLeft = farPlaneDist - (camera.transform.up * halfCameraFarPlaneHeight) - (camera.transform.right * halfCameraFarPlaneWidth); //Seteo el punto de abajo a la izquierda.
 
-        farDownRight = farPlaneDist - (camera.transform.up) + (camera.transform.right); //Seteo el punto de abajo a la derecha.
+        farDownRight = farPlaneDist - (camera.transform.up * halfCameraFarPlaneHeight) + (camera.transform.right * halfCameraFarPlaneWidth); //Seteo el punto de abajo a la derecha.
     }
 
     //Funcion para setear los puntos del plano cercano
     public void SetNearPoints(Vector3 nearPos)
     {
+        float halfCameraNearPlaneHeight = Mathf.Tan((camera.fieldOfView / 2) * Mathf.Deg2Rad) * camera.nearClipPlane; //Guardo el alto del plano cercano de la camara. (La mitad)
+        float HalfCameraNearPlaneWidth = (camera.aspect * halfCameraNearPlaneHeight); //Guardo el ancho del plano cercano de la camara. (La mitad)
+
         Vector3 nearPlaneDist = camera.transform.position + (camera.transform.forward * camera.nearClipPlane); //Guardo la distancia del plano cercano de la camara.
 
-        nearTopLeft = nearPlaneDist + (camera.transform.up) - (camera.transform.right); //Seteo el punto de arriba a la izquierda.
+        nearTopLeft = nearPlaneDist + (camera.transform.up * halfCameraNearPlaneHeight) - (camera.transform.right * HalfCameraNearPlaneWidth); //Seteo el punto de arriba a la izquierda.
 
-        nearTopRight = nearPlaneDist + (camera.transform.up) + (camera.transform.right); //Seteo el punto de arriba a la derecha.
+        nearTopRight = nearPlaneDist + (camera.transform.up * halfCameraNearPlaneHeight) + (camera.transform.right * HalfCameraNearPlaneWidth); //Seteo el punto de arriba a la derecha.
 
-        nearDownLeft = nearPlaneDist - (camera.transform.up) - (camera.transform.right); //Seteo el punto de abajo a la izquierda.
+        nearDownLeft = nearPlaneDist - (camera.transform.up * halfCameraNearPlaneHeight) - (camera.transform.right * HalfCameraNearPlaneWidth); //Seteo el punto de abajo a la izquierda.
 
-        nearDownRight = nearPlaneDist - (camera.transform.up) + (camera.transform.right); //Seteo el punto de abajo a la derecha.
+        nearDownRight = nearPlaneDist - (camera.transform.up * halfCameraNearPlaneHeight) + (camera.transform.right * HalfCameraNearPlaneWidth); //Seteo el punto de abajo a la derecha.
     }
 
     public void OnDrawGizmos()
