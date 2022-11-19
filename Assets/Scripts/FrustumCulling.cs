@@ -106,4 +106,43 @@ public class FrustumCulling : MonoBehaviour
 
         nearDownRight = nearPlaneDist - (camera.transform.up) + (camera.transform.right); //Seteo el punto de abajo a la derecha.
     }
+
+    public void OnDrawGizmos()
+    {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+        Gizmos.color = Color.green;
+
+
+        //Dibujo el plano lejano.
+        DrawPlane(farTopRight, farDownRight, farDownLeft, farTopLeft);
+
+        //Dibujo el plano cercano.
+        DrawPlane(nearTopRight, nearDownRight, nearDownLeft, nearTopLeft);
+
+        //Dibujo el plano izquierdo.
+        DrawPlane(nearTopLeft, farTopLeft, farDownLeft, nearDownLeft);
+
+        //Dibujo el plano derecho.
+        DrawPlane(nearTopRight, farTopRight, farDownRight, nearDownRight);
+
+        //Dibujo el plano superior.
+        DrawPlane(nearTopLeft, farTopLeft, farTopRight, nearTopRight);
+
+        //Dibujo el plano inferior.
+        DrawPlane(nearDownLeft, farDownLeft, farDownRight, nearDownRight);
+    }
+
+    //Funcion para dibujar los planos del frustrum.
+    public void DrawPlane(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
+    {
+        Gizmos.DrawLine(p1, p2);
+        Gizmos.DrawLine(p2, p3);
+        Gizmos.DrawLine(p3, p4);
+        Gizmos.DrawLine(p4, p1);
+
+        Gizmos.color = Color.green;
+    }
 }
