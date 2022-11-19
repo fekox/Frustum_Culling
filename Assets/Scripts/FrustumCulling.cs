@@ -5,13 +5,13 @@ using System;
 
 public class FrustumCulling : MonoBehaviour
 {
-    //Inicializa las Constantes
+    //Inicializa las constantes
     private const int maxPlanes = 6; //Cantidad de planos del frstrum.
     
-    //Inicializo un array con la cantidad de planos del frustrum.
+    //Inicializo un array de planos con la cantidad de planos del frustrum.
     Plane[] plane = new Plane[maxPlanes];
 
-    //Creo la una camara.
+    //Inicializo una camara.
     Camera camera;
 
     //Plano cercano de la camara.
@@ -26,101 +26,38 @@ public class FrustumCulling : MonoBehaviour
     [SerializeField] Vector3 farBottomLeft;
     [SerializeField] Vector3 farBottomRight;
 
-    private void Awake() //Se llama automaticamente al iniciar el programa.
+    private void Awake() //Se llama automaticamente al iniciar el scrip.
     {
         //Hago que la camara sea igual a la main camara.
         camera = Camera.main;
     }
 
-    void Start() //Se llama automaticamente al iniciar el programa.
+    void Start() //Se llama automaticamente despues del awake.
     {
+        //Creo los 6 planos del frutrum.
         for (int i = 0; i < maxPlanes; i++)
         {
             plane[i] = new Plane();
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void FixedUpdate() //Se llama un vez por frame.
     {
-        plane[0].SetNormalAndPosition(Vector3.up, plaDown.transform.position);
-        plane[1].SetNormalAndPosition(Vector3.down, plaUp.transform.position);
-        plane[2].SetNormalAndPosition(Vector3.left, plaRight.transform.position);
-        plane[3].SetNormalAndPosition(Vector3.right, plaLeft.transform.position);
-        plane[4].SetNormalAndPosition(Vector3.back, plaBack.transform.position);
-        plane[5].SetNormalAndPosition(Vector3.forward, plaFront.transform.position);
-
-        bool isInside = false;
-
-        Vector3 scale = objecTest.transform.localScale / 2;
-
-        for (int i = 0; i < maxPoints; i++)
-        {
-            point[i] = objecTest.transform.position;
-        }
-
-        Vector3 foward;
-        Vector3 up;
-        Vector3 right;
-
-        foward = objecTest.transform.forward;
-        up = objecTest.transform.up;
-        right = objecTest.transform.right;
-        
-        point[0] += scale.x * right + scale.y * up + scale.z * foward;
-        point[1] += scale.x * right + scale.y * up + -scale.z * foward;
-        point[2] += scale.x * right + -scale.y * up + scale.z * foward;
-        point[3] += scale.x * right + -scale.y * up + -scale.z * foward;
-        point[4] += -scale.x * right + scale.y * up + scale.z * foward;
-        point[5] += -scale.x * right + scale.y * up + -scale.z * foward;
-        point[6] += -scale.x * right + -scale.y * up + scale.z * foward;
-        point[7] += -scale.x * right + -scale.y * up + -scale.z * foward;
-
-        //Cada punto recorre todos los planos
-        for (int i = 0; i < maxPoints; i++)
-        {
-            int counter = maxPlanes;
-
-            for (int j = 0; j < maxPlanes; j++)
-            {
-                if (plane[j].GetSide(point[i]))
-                {
-                    counter--;
-                }
-            }
-
-            if (counter == 0)
-            {
-                Debug.Log("Está adentro");
-                isInside = true;
-                break;
-            }
-        }
-
-        if (isInside) 
-        {
-            if(!objecTest.activeSelf) 
-            {
-                objecTest.SetActive(true);
-            }
-        }
-        else 
-        {
-            if(objecTest.activeSelf) 
-            {
-                Debug.Log("Está afuera");
-                objecTest.SetActive(false);
-            }
-        }
+        UpdateFrustrumPlanes();//Llamo a la funcion que updatea los planos del frustrum.
     }
 
-    private void OnDrawGizmos()
+    void UpdateFrustrumPlanes()
     {
-        Gizmos.color = Color.green;
+        Vector3 frontMultFar = camera.farClipPlane * camera.transform.forward;
 
-        for (int i = 0; i < maxPoints; i++)
-        {
-            Gizmos.DrawSphere(point[i], 0.2f);
-        }
+        //*Plano cercano*
+        Vector3 nearPlanePos = camera.transform.position; //Guardo la posicion de la camara
+        nearPlanePos += camera.transform.forward * camera.nearClipPlane; //Actualizo el plano cercano de la camara.
+        plane[0].SetNormalAndPosition(camera.transform.forward, nearPlanePos); //Seteo el plano cercano del frustrum.
+
+        //*Plano cercano*
+        Vector3 farPlanePos = camera.transform.position; //Guardo la posicion de la camara
+        farPlanePos += camera.transform.forward * camera.farClipPlane; //Actualizo el plano lejano de la camara.
+        plane[1].SetNormalAndPosition(camera.transform.forward * -1, farPlanePos); //Seteo el plano lejano del frustrum.
     }
 }
