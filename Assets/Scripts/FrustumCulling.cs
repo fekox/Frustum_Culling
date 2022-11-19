@@ -48,8 +48,6 @@ public class FrustumCulling : MonoBehaviour
 
     void UpdateFrustrumPlanes()
     {
-        Vector3 frontMultFar = camera.farClipPlane * camera.transform.forward;
-
         //*Plano cercano*
         Vector3 nearPlanePos = camera.transform.position; //Guardo la posicion de la camara
         nearPlanePos += camera.transform.forward * camera.nearClipPlane; //Actualizo el plano cercano de la camara.
@@ -59,5 +57,22 @@ public class FrustumCulling : MonoBehaviour
         Vector3 farPlanePos = camera.transform.position; //Guardo la posicion de la camara
         farPlanePos += camera.transform.forward * camera.farClipPlane; //Actualizo el plano lejano de la camara.
         plane[1].SetNormalAndPosition(camera.transform.forward * -1, farPlanePos); //Seteo el plano lejano del frustrum.
+
+        //*Plano Izquierdo*
+        plane[2].Set3Points(camera.transform.position, farBottomLeft, farTopLeft); //Seteo el plano Izquierdo del frustrum.
+
+        //*Plano Derecho*
+        plane[3].Set3Points(camera.transform.position, farTopRight, farBottomRight); //Seteo el Derecho lejano del frustrum.
+
+        //*Plano de arriba*
+        plane[4].Set3Points(camera.transform.position, farTopLeft, farTopRight); //Seteo el plano de arriba del frustrum.
+
+        //*Plano de abajo*
+        plane[5].Set3Points(camera.transform.position, farBottomRight, farBottomLeft); //Seteo el plano de abajo del frustrum.
+
+        for (int i = 2; i < maxPlanes; i++)
+        {
+            plane[i].Flip();//Hace que el plano mire en la direccion opuesta.
+        }
     }
 }
