@@ -7,12 +7,17 @@ public class FrustumCulling : MonoBehaviour
 {
     //Inicializa las constantes
     private const int maxPlanes = 6; //Cantidad de planos del frstrum.
-    
+    private const int maxObjecTest = 5; //Object Test.
+    private const int AABBPoints = 8; //Axis Aligned Bounding Boxes points.
+
     //Inicializo un array de planos con la cantidad de planos del frustrum.
     Plane[] plane = new Plane[maxPlanes];
 
     //Inicializo una camara.
     Camera camera;
+
+    //Inicializo un array de game objects.
+    [SerializeField] GameObject[] objectsTest = new GameObject[maxObjecTest];
 
     //Plano cercano de la camara.
     [SerializeField] Vector3 nearTopLeft;
@@ -26,6 +31,20 @@ public class FrustumCulling : MonoBehaviour
     [SerializeField] Vector3 farDownLeft;
     [SerializeField] Vector3 farDownRight;
 
+    //Creo un struc object test.
+    public struct Obj
+    {
+        public GameObject gameObject;
+        public MeshFilter meshFilter;
+        public MeshRenderer meshRenderer;
+        public Vector3[] aabb;
+        public Vector3 scale;
+        public Vector3 extents;
+    }
+
+    //Inicializo un array del struct object. 
+    [SerializeField] Obj[] objs = new Obj[maxObjecTest];
+
     private void Awake() //Se llama automaticamente al iniciar el scrip.
     {
         //Hago que la camara sea igual a la main camara.
@@ -34,10 +53,21 @@ public class FrustumCulling : MonoBehaviour
 
     void Start() //Se llama automaticamente despues del awake.
     {
-        //Creo los 6 planos del frutrum.
+        //Creo los planos del frutrum.
         for (int i = 0; i < maxPlanes; i++)
         {
             plane[i] = new Plane();
+        }
+
+        //Seteo el todos los objects test dentro del array.
+        for (int i = 0; i < maxObjecTest; i++)
+        {
+            objs[i].gameObject = objectsTest[i];
+            objs[i].meshFilter = objectsTest[i].GetComponent<MeshFilter>();
+            objs[i].meshRenderer = objectsTest[i].GetComponent<MeshRenderer>();
+            objs[i].aabb = new Vector3[AABBPoints];
+            objs[i].extents = objs[i].meshRenderer.bounds.extents;
+            objs[i].scale = objs[i].meshRenderer.bounds.size;
         }
     }
 
@@ -80,7 +110,7 @@ public class FrustumCulling : MonoBehaviour
     }
 
     //Funcion para setear los puntos del plano lejano
-    public void SetFarPoints(Vector3 farPos)
+    public void SetFarPoints(Vector3 farPlanePos)
     {
         float halfCameraFarPlaneHeight = Mathf.Tan((camera.fieldOfView / 2) * Mathf.Deg2Rad) * camera.farClipPlane; //Guardo el alto del plano lejano de la camara. (La mitad)
         float halfCameraFarPlaneWidth = (camera.aspect * halfCameraFarPlaneHeight); //Guardo el ancho del plano lejano de la camara. (La mitad)
@@ -97,7 +127,7 @@ public class FrustumCulling : MonoBehaviour
     }
 
     //Funcion para setear los puntos del plano cercano
-    public void SetNearPoints(Vector3 nearPos)
+    public void SetNearPoints(Vector3 nearPlanePos)
     {
         float halfCameraNearPlaneHeight = Mathf.Tan((camera.fieldOfView / 2) * Mathf.Deg2Rad) * camera.nearClipPlane; //Guardo el alto del plano cercano de la camara. (La mitad)
         float HalfCameraNearPlaneWidth = (camera.aspect * halfCameraNearPlaneHeight); //Guardo el ancho del plano cercano de la camara. (La mitad)
@@ -120,7 +150,6 @@ public class FrustumCulling : MonoBehaviour
             return;
         }
         Gizmos.color = Color.green;
-
 
         //Dibujo el plano lejano.
         DrawPlane(farTopRight, farDownRight, farDownLeft, farTopLeft);
