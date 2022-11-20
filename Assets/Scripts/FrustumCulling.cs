@@ -59,7 +59,7 @@ public class FrustumCulling : MonoBehaviour
             plane[i] = new Plane();
         }
 
-        //Seteo el todos los objects test dentro del array.
+        //Seteo el todos los objects test. 
         for (int i = 0; i < maxObjecTest; i++)
         {
             objs[i].gameObject = objectsTest[i];
@@ -107,6 +107,11 @@ public class FrustumCulling : MonoBehaviour
         {
             plane[i].Flip();//Hace que el plano mire en la direccion opuesta.
         }
+
+        for (int i = 0; i < maxObjecTest; i++)
+        {
+            SetAABB(ref objs[i]);//Seteo el AABB de todos los objetos.
+        }
     }
 
     //Funcion para setear los puntos del plano lejano
@@ -143,6 +148,55 @@ public class FrustumCulling : MonoBehaviour
         nearDownRight = nearPlaneDist - (camera.transform.up * halfCameraNearPlaneHeight) + (camera.transform.right * HalfCameraNearPlaneWidth); //Seteo el punto de abajo a la derecha.
     }
 
+    //Funcion para setear los puntos del Axis Aligned Bounding Boxes.
+    public void SetAABB(ref Obj actualObj) 
+    {
+        Vector3 size = actualObj.extents; //Guardo el extent del objeto.
+        Vector3 center = actualObj.meshRenderer.bounds.center; //Guardo el centro del objeto.
+
+        //*Seteo todos los puntos del AABB*
+        actualObj.aabb[0] = new Vector3(center.x - size.x, center.y + size.y, center.z - size.z); //Esquina superior izquierda del frente.
+        actualObj.aabb[1] = new Vector3(center.x + size.x, center.y + size.y, center.z - size.z); //Esquina superior derecha del frente.
+        actualObj.aabb[2] = new Vector3(center.x - size.x, center.y + size.y, center.z - size.z); //Esquina inferior izquierda del frente.
+        actualObj.aabb[3] = new Vector3(center.x + size.x, center.y + size.y, center.z - size.z); //Esquina inferior derecha del frente.
+        actualObj.aabb[4] = new Vector3(center.x - size.x, center.y + size.y, center.z + size.z); //Esquina superior izquierda de atras.
+        actualObj.aabb[5] = new Vector3(center.x + size.x, center.y + size.y, center.z + size.z); //Esquina superior derecha de atras.
+        actualObj.aabb[6] = new Vector3(center.x - size.x, center.y - size.y, center.z + size.z); //Esquina inferior izquierda de atras.
+        actualObj.aabb[7] = new Vector3(center.x + size.x, center.y - size.y, center.z + size.z); //Esquina inferior derecha de atras.
+
+        //Transformo las posiciiones en puntos dentro del espacio
+        actualObj.aabb[0] = transform.TransformPoint(actualObj.aabb[0]);
+        actualObj.aabb[1] = transform.TransformPoint(actualObj.aabb[1]);
+        actualObj.aabb[2] = transform.TransformPoint(actualObj.aabb[2]);
+        actualObj.aabb[3] = transform.TransformPoint(actualObj.aabb[3]);
+        actualObj.aabb[4] = transform.TransformPoint(actualObj.aabb[4]);
+        actualObj.aabb[5] = transform.TransformPoint(actualObj.aabb[5]);
+        actualObj.aabb[6] = transform.TransformPoint(actualObj.aabb[6]);
+        actualObj.aabb[7] = transform.TransformPoint(actualObj.aabb[7]);
+
+        //Roto el punto en la misma direccion que el objeto (punto a rotar, pivot en el que rota, angulo en cada eje).
+        actualObj.aabb[0] = RotatePointAroundPivot(actualObj.aabb[0], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[1] = RotatePointAroundPivot(actualObj.aabb[1], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[2] = RotatePointAroundPivot(actualObj.aabb[2], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[3] = RotatePointAroundPivot(actualObj.aabb[3], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[4] = RotatePointAroundPivot(actualObj.aabb[4], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[5] = RotatePointAroundPivot(actualObj.aabb[5], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[6] = RotatePointAroundPivot(actualObj.aabb[6], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+        actualObj.aabb[7] = RotatePointAroundPivot(actualObj.aabb[7], actualObj.gameObject.transform.position, actualObj.gameObject.transform.rotation.eulerAngles);
+
+
+    }
+
+    //Funcion para rotar un punto alrededor de un pivote.
+    //*https://gamedev.stackexchange.com/questions/133038/unity-rotate-a-point-around-an-arbitrary-axis-and-anchor*
+    public Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
+    {
+        Vector3 dir = point - pivot; // get point direction relative to pivot
+        dir = Quaternion.Euler(angles) * dir; // rotate it
+        point = dir + pivot; // calculate rotated point
+        return point; // return it
+    }
+
     public void OnDrawGizmos()
     {
         if (!Application.isPlaying)
@@ -177,6 +231,33 @@ public class FrustumCulling : MonoBehaviour
         Gizmos.DrawLine(p2, p3);
         Gizmos.DrawLine(p3, p4);
         Gizmos.DrawLine(p4, p1);
+
+        Gizmos.color = Color.green;
+    }
+
+    //Funcion para dibujar el AABB.
+    public void DrawAABB(ref Obj actualObj) 
+    {
+        Gizmos.color = Color.magenta;
+
+        for (int i = 0; i < AABBPoints; i++)
+        {
+            Gizmos.DrawSphere(actualObj.aabb[i], 0.06f);
+        }
+
+        //Dibujado de la caja que se forma uniendo los puntos del AABB.
+        Gizmos.DrawLine(actualObj.aabb[0], actualObj.aabb[1]);
+        Gizmos.DrawLine(actualObj.aabb[0], actualObj.aabb[4]);
+        Gizmos.DrawLine(actualObj.aabb[1], actualObj.aabb[3]);
+        Gizmos.DrawLine(actualObj.aabb[2], actualObj.aabb[0]);
+        Gizmos.DrawLine(actualObj.aabb[3], actualObj.aabb[2]);
+        Gizmos.DrawLine(actualObj.aabb[4], actualObj.aabb[5]);
+        Gizmos.DrawLine(actualObj.aabb[5], actualObj.aabb[7]);
+        Gizmos.DrawLine(actualObj.aabb[5], actualObj.aabb[1]);
+        Gizmos.DrawLine(actualObj.aabb[6], actualObj.aabb[2]);
+        Gizmos.DrawLine(actualObj.aabb[6], actualObj.aabb[4]);
+        Gizmos.DrawLine(actualObj.aabb[7], actualObj.aabb[3]);
+        Gizmos.DrawLine(actualObj.aabb[7], actualObj.aabb[6]);
 
         Gizmos.color = Color.green;
     }
