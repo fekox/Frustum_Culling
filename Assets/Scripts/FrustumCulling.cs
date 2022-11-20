@@ -151,6 +151,15 @@ public class FrustumCulling : MonoBehaviour
     //Funcion para setear los puntos del Axis Aligned Bounding Boxes.
     public void SetAABB(ref Obj actualObj) 
     {
+        if(actualObj.scale != actualObj.gameObject.transform.localScale) 
+        {
+            Quaternion rotation = actualObj.gameObject.transform.rotation;
+            actualObj.gameObject.transform.rotation = Quaternion.identity;
+            actualObj.gameObject.transform.rotation = rotation;
+            actualObj.extents = actualObj.meshRenderer.bounds.extents;
+            actualObj.scale = actualObj.gameObject.transform.localScale;
+        }
+
         Vector3 size = actualObj.extents; //Guardo el extent del objeto.
         Vector3 center = actualObj.meshRenderer.bounds.center; //Guardo el centro del objeto.
 
@@ -222,6 +231,12 @@ public class FrustumCulling : MonoBehaviour
 
         //Dibujo el plano inferior.
         DrawPlane(nearDownLeft, farDownLeft, farDownRight, nearDownRight);
+
+        //Dibujo el AABB en cada objeto.
+        for (int i = 0; i < maxObjecTest; i++)
+        {
+            DrawAABB(ref objs[i]);
+        }
     }
 
     //Funcion para dibujar los planos del frustrum.
