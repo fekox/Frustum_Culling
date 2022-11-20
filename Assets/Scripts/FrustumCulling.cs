@@ -112,6 +112,11 @@ public class FrustumCulling : MonoBehaviour
         {
             SetAABB(ref objs[i]);//Seteo el AABB de todos los objetos.
         }
+
+        for (int i = 0; i < maxObjecTest; i++)
+        {
+            ObjectCollision(objs[i]); //Chequo de todos los objetos, para saber si estan adentro o afuera del frustrum.
+        }
     }
 
     //Funcion para setear los puntos del plano lejano
@@ -151,13 +156,13 @@ public class FrustumCulling : MonoBehaviour
     //Funcion para setear los puntos del Axis Aligned Bounding Boxes.
     public void SetAABB(ref Obj actualObj) 
     {
-        if(actualObj.scale != actualObj.gameObject.transform.localScale) 
+        if(actualObj.scale != actualObj.gameObject.transform.localScale) //Si la escal del objeto es diferente a su escala local, el objeto se vuelve a setear con su nueva escala.
         {
             Quaternion rotation = actualObj.gameObject.transform.rotation;
             actualObj.gameObject.transform.rotation = Quaternion.identity;
-            actualObj.gameObject.transform.rotation = rotation;
             actualObj.extents = actualObj.meshRenderer.bounds.extents;
             actualObj.scale = actualObj.gameObject.transform.localScale;
+            actualObj.gameObject.transform.rotation = rotation;
         }
 
         Vector3 size = actualObj.extents; //Guardo el extent del objeto.
@@ -166,8 +171,8 @@ public class FrustumCulling : MonoBehaviour
         //*Seteo todos los puntos del AABB*
         actualObj.aabb[0] = new Vector3(center.x - size.x, center.y + size.y, center.z - size.z); //Esquina superior izquierda del frente.
         actualObj.aabb[1] = new Vector3(center.x + size.x, center.y + size.y, center.z - size.z); //Esquina superior derecha del frente.
-        actualObj.aabb[2] = new Vector3(center.x - size.x, center.y + size.y, center.z - size.z); //Esquina inferior izquierda del frente.
-        actualObj.aabb[3] = new Vector3(center.x + size.x, center.y + size.y, center.z - size.z); //Esquina inferior derecha del frente.
+        actualObj.aabb[2] = new Vector3(center.x - size.x, center.y - size.y, center.z - size.z); //Esquina inferior izquierda del frente.
+        actualObj.aabb[3] = new Vector3(center.x + size.x, center.y - size.y, center.z - size.z); //Esquina inferior derecha del frente.
         actualObj.aabb[4] = new Vector3(center.x - size.x, center.y + size.y, center.z + size.z); //Esquina superior izquierda de atras.
         actualObj.aabb[5] = new Vector3(center.x + size.x, center.y + size.y, center.z + size.z); //Esquina superior derecha de atras.
         actualObj.aabb[6] = new Vector3(center.x - size.x, center.y - size.y, center.z + size.z); //Esquina inferior izquierda de atras.
@@ -204,6 +209,61 @@ public class FrustumCulling : MonoBehaviour
         dir = Quaternion.Euler(angles) * dir; // rotate it
         point = dir + pivot; // calculate rotated point
         return point; // return it
+    }
+
+    public void ObjectCollision(Obj actualObj) 
+    {
+        bool isInside = false;
+
+        for (int i = 0; i < AABBPoints; i++) //Recorro todos los puntos del AABB.
+        {
+            int counter = maxPlanes; //Creo un contador con la maxima cantidad de planos.
+
+            for (int j = 0; j < maxPlanes; j++) //Recorro todos los planos. 
+            {
+                if (plane[j].GetSide(actualObj.aabb[i])) //Si el punto esta en el lado positivo del plano al contador se le resta 1, se chequea con todos los puntos.
+                {
+                    counter--;
+                }
+            }
+
+            if (counter == 0) //Si todos los puntos del AABB se encuentran dentro del lado positivo de los 6 planos, la figura esta adentro del frustrum. 
+            {
+                isInside = true; //La variable se hace true.
+                break;
+            }
+        }
+
+        if (isInside) //Si el objeto esta adentro del frustrum, 
+        {
+            for (int i = 0; i < actualObj.meshFilter.mesh.vertices.Length; i++) //Rocorro todos los vertices del objeto actual.
+            {
+                int counter = maxPlanes; //Creo un contador con la maxima cantidad de planos.
+
+                for (int j = 0; j < maxPlanes; j++) //Recorro todos los planos. 
+                {
+                    if (plane[j].GetSide(actualObj.gameObject.transform.TransformPoint(actualObj.meshFilter.mesh.vertices[i]))) //Si el vertice esta en el lado positivo del plano al contador se le resta 1, se cheque con todos los vertices.
+                    {
+                        counter--;
+                    }
+                }
+
+                if (counter == 0) //Si todos los vertices del objeto actual se encuentran delntro del lado positivo de los 6 planos, la figura se hace visible.
+                {
+                    actualObj.gameObject.SetActive(true);
+                    break;
+                }
+            }
+        }
+
+        else
+        {
+            if (actualObj.gameObject.activeSelf) //Si el objeto esta activado y se encuentra duera del Frustrum, se desactiva. 
+            {
+                actualObj.gameObject.SetActive(false);
+            }
+        }
+    
     }
 
     public void OnDrawGizmos()
@@ -257,7 +317,7 @@ public class FrustumCulling : MonoBehaviour
 
         for (int i = 0; i < AABBPoints; i++)
         {
-            Gizmos.DrawSphere(actualObj.aabb[i], 0.06f);
+            Gizmos.DrawSphere(actualObj.aabb[i], 0.05f);
         }
 
         //Dibujado de la caja que se forma uniendo los puntos del AABB.
