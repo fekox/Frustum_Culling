@@ -59,7 +59,7 @@ public class FrustumCulling : MonoBehaviour
             plane[i] = new Plane();
         }
 
-        //Seteo el todos los objects test. 
+        //Seteo todos los objects test. 
         for (int i = 0; i < maxObjecTest; i++)
         {
             objs[i].gameObject = objectsTest[i];
@@ -83,7 +83,7 @@ public class FrustumCulling : MonoBehaviour
         nearPlanePos += camera.transform.forward * camera.nearClipPlane; //Actualizo el plano cercano de la camara.
         plane[0].SetNormalAndPosition(camera.transform.forward, nearPlanePos); //Seteo el plano cercano del frustrum.
 
-        //*Plano cercano*
+        //*Plano lejano*
         Vector3 farPlanePos = camera.transform.position; //Guardo la posicion de la camara
         farPlanePos += camera.transform.forward * camera.farClipPlane; //Actualizo el plano lejano de la camara.
         plane[1].SetNormalAndPosition(camera.transform.forward * -1, farPlanePos); //Seteo el plano lejano del frustrum.
