@@ -1,3 +1,3 @@
-# Frutrum_AlgebraTP3
+# Frutrum_Culling_Algebra
 
 A simple college project on frustum culling made in Unity.
